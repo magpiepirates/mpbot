@@ -1,0 +1,145 @@
+'use strict';
+
+let Discord = require('discord.js');
+
+module.exports = {
+    name: 'test',
+    adminOnly: true,
+    description: 'you shouldn\'t see this, not even if you\'re an admin',
+    execute(message, args) {
+        switch (args[0]) {
+            case 'pr': {
+                let id = '725190372862459934'
+                let guild = message.guild;
+                let channel = message.guild.channels.cache.find(c => c.id === id);
+                console.log(guild.me.permissions.toArray(), channel.permissionsFor(guild.me).toArray());
+                break;
+            }
+            case 'sendemoji': {
+                let embed = new Discord.MessageEmbed();
+                let earnings = 10000;
+                embed.setDescription(`${message.author.username} made <:noisedoll:409079087861071872> ${Number(earnings).toLocaleString()} for greeting new users! <:fig:539860896563068928> <:fig:539860896563068928> <:fig:539860896563068928>`);
+                message.channel.send(embed);
+                break;
+            }
+            case 'embed': {
+                let embed = new Discord.MessageEmbed();
+
+                embed.addField('something', 'yeah');
+
+                message.channel.send("this is a message", {
+                    embed: embed
+                }).catch(console.error);
+                break;
+            }
+
+            case 'eval': {
+                args.shift();
+                let f = args.join(' ');
+                let result = eval(f);
+                console.log(result);
+                message.reply(String(result));
+                break;
+            }
+
+            case 'emptycat': {
+                args.shift();
+                let catName = args.join('-').toLowerCase();
+                let category = message.guild.channels.cache.find(c => c.name.toLowerCase() === catName && c.type === 'category');
+                console.log(catName, category);
+                category.children.forEach(guildChannel => {
+                    guildChannel.delete(`Emptied ${catName}`)
+                        .catch(console.error);
+                });
+                break;
+            }
+
+            case 'messagecount': {
+                args.shift();
+                let channelName = args.join("-");
+                let channel = message.guild.channels.cache.find(c => c.name === channelName);
+                channel.messages.fetch({ limit: 100 }).
+                    then(messageCollection => {
+                        let num = messageCollection.array().length;
+                        message.reply(String(num));
+                    })
+                    .catch(console.error);
+                break;
+            }
+
+            case 'say': {
+                args.shift();
+                let txt = args.join(' ');
+                message.channel.send(txt);
+                break;
+            }
+
+            case 'fillcat': {
+                args.shift();
+                let category = args.join(' ');
+                let categoryChannel = message.guild.channels.cache.find(c => c.name.toLowerCase() === category.toLowerCase());
+                console.log(categoryChannel);
+                let size = categoryChannel.children.size;
+                for (let i = 0; i < 50 - size; i++) {
+                    // let channel = new Discord.TextChannel(message.guild, { name: `uwu${i}`, type: 'text' });
+                    // channel.setParent(categoryChannel).catch(console.error);
+
+                    message.guild.channels.create(`uwu${i}`, {
+                        type: 'text',
+                        topic: 'Check the pinned messages!',
+                        nsfw: false,
+                        parent: undefined,
+                        reason: 'Testing'
+                    })
+                        .then(channel => channel.setParent(categoryChannel))
+                        .catch(console.error);
+                }
+                break;
+            }
+
+            case 'newrole': {
+                args.shift();
+                let rolename = args.join(' ');
+
+                let roleData = {
+                    data: {
+                        name: rolename,
+                        color: 0xff0000,
+                        hoist: true,
+                        //position: idk,
+                        //permissions: idk,
+                        mentionable: true
+                    },
+                    reason: `${message.client.user.username} asked me to add this`
+                };
+
+                message.guild.roles.create(roleData)
+                    .then(role => message.channel.send(`Created ${role}`))
+                    .catch(console.error);
+                break;
+            }
+
+            case 'cinf': {
+                let channels = message.guild.channels.cache.filter(c => c.type === 'voice');
+                console.log(channels);
+                break;
+            }
+
+            case 'delrole': {
+                args.shift();
+                let rolename = args.join(' ');
+                let role = message.guild.roles.cache.find(r => r.name === rolename);
+                role.delete()
+                    .then(message.channel.send(`Deleted role ${rolename}`))
+                    .catch(console.error);
+                break;
+            }
+
+            default: {
+                message.reply("u stupid. i bet ur analog, aren't u");
+                break;
+            }
+        }
+
+    }
+}
